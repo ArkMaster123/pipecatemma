@@ -37,6 +37,8 @@ export default function EmmaAdvancedPage() {
   const localStreamRef = useRef<MediaStream | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
+  const animationFrameRef = useRef<number | null>(null)
+  const outputSourceRef = useRef<MediaElementAudioSourceNode | null>(null)
 
   const handleConnect = async () => {
     try {
@@ -105,6 +107,9 @@ export default function EmmaAdvancedPage() {
         if (audioRef.current && event.streams[0]) {
           audioRef.current.srcObject = event.streams[0]
           audioRef.current.play().catch(e => console.log('Audio play failed:', e))
+          
+          // Set up output audio analysis for Emma's voice
+          setupOutputAudioAnalysis(audioRef.current)
         }
       }
 
