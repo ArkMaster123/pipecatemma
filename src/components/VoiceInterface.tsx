@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { usePipecatClient } from '@/hooks/usePipecatClient';
 import { ShaderBackground } from './ShaderBackground';
+import { ShaderControls } from './ShaderControls';
 import { Controls } from './Controls';
 import { AudioVisualizer } from './AudioVisualizer';
 
@@ -10,6 +11,12 @@ export const VoiceInterface = () => {
   const [transcript, setTranscript] = useState<string[]>([]);
   const [audioLevel, setAudioLevel] = useState(0);
   const [isBotSpeaking, setIsBotSpeaking] = useState(false);
+  
+  // Shader control states
+  const [shaderQuality, setShaderQuality] = useState(0.7);
+  const [shaderIntensity, setShaderIntensity] = useState(1.0);
+  const [shaderSpeed, setShaderSpeed] = useState(1.0);
+  const [shaderComplexity, setShaderComplexity] = useState(0.6);
 
   const { client, isConnected, connect, disconnect } = usePipecatClient({
     onTranscript: (text, isUser) => {
@@ -25,6 +32,21 @@ export const VoiceInterface = () => {
         audioLevel={audioLevel}
         voiceActivity={isConnected ? 1 : 0}
         botSpeaking={isBotSpeaking}
+        quality={shaderQuality}
+        intensity={shaderIntensity}
+        speed={shaderSpeed}
+        complexity={shaderComplexity}
+      />
+      
+      <ShaderControls
+        quality={shaderQuality}
+        intensity={shaderIntensity}
+        speed={shaderSpeed}
+        complexity={shaderComplexity}
+        onQualityChange={setShaderQuality}
+        onIntensityChange={setShaderIntensity}
+        onSpeedChange={setShaderSpeed}
+        onComplexityChange={setShaderComplexity}
       />
       
       <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
