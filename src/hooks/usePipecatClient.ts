@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { PipecatClient } from '@pipecat-ai/client-js';
 import { OpenAIRealTimeWebRTCTransport } from '@pipecat-ai/openai-realtime-webrtc-transport';
+import { DailyTransport } from '@pipecat-ai/daily-transport';
 
 interface UsePipecatClientProps {
   onTranscript?: (text: string, isUser: boolean) => void;
@@ -16,11 +17,23 @@ export const usePipecatClient = ({
   const [client, setClient] = useState<PipecatClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isBotSpeaking, setIsBotSpeaking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const connect = useCallback(async () => {
-    const newClient = new PipecatClient({
-      transport: new OpenAIRealTimeWebRTCTransport({
-        api_key: process.env.NEXT_PUBLIC_OPENAI_API_KEY!,
+    setIsConnecting(true);
+    setError(null);
+
+    try {
+      if (!process.env.NEXT_PUBLIC_OPENAI_API_KEY) {
+        throw new Error('OpenAI API key not found. Please check your .env.local file.');
+      }
+
+      console.log('🔌 Connecting to OpenAI Realtime API...');
+      
+      // Use OpenAI Realtime transport for development
+      const transport = new OpenAIRealTimeWebRTCTransport({
+        api_key: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
         settings: {
           instructions: `You are Emma, a compassionate home care assistant for elderly users. 
             Provide gentle, patient support with daily tasks, medication reminders, health monitoring, 
@@ -80,33 +93,77 @@ export const usePipecatClient = ({
             }
           ]
         }
-      }),
-      enableMic: true,
-      enableCam: false
-    });
+      });
 
-    // Event listeners
-    newClient.on('connected', () => setIsConnected(true));
-    newClient.on('disconnected', () => setIsConnected(false));
-    newClient.on('bot-started-speaking', () => {
-      setIsBotSpeaking(true);
-      onBotSpeaking?.(true);
-    });
-    newClient.on('bot-stopped-speaking', () => {
-      setIsBotSpeaking(false);
-      onBotSpeaking?.(false);
-    });
-    newClient.on('user-transcript', ({ text }) => onTranscript?.(text, true));
-    newClient.on('bot-transcript', ({ text }) => onTranscript?.(text, false));
+      const newClient = new PipecatClient({
+        transport,
+        enableMic: true,
+        enableCam: false
+      });
 
-    await newClient.connect();
-    setClient(newClient);
+      // Enhanced event listeners with debugging
+      newClient.on('connected', () => {
+        console.log('✅ Successfully connected to OpenAI Realtime API');
+        setIsConnected(true);
+        setError(null);
+        setIsConnecting(false);
+      });
+
+      newClient.on('disconnected', () => {
+        console.log('❌ Disconnected from OpenAI Realtime API');
+        setIsConnected(false);
+        setIsConnecting(false);
+      });
+
+      newClient.on('error', (error) => {
+        console.error('❌ Pipecat client error:', error);
+        setError(error.message || 'Connection error occurred');
+        setIsConnecting(false);
+      });
+
+      newClient.on('bot-started-speaking', () => {
+        console.log('🗣️ Emma started speaking');
+        setIsBotSpeaking(true);
+        onBotSpeaking?.(true);
+      });
+
+      newClient.on('bot-stopped-speaking', () => {
+        console.log('🔇 Emma stopped speaking');
+        setIsBotSpeaking(false);
+        onBotSpeaking?.(false);
+      });
+
+      newClient.on('user-transcript', ({ text }) => {
+        console.log('👤 User said:', text);
+        onTranscript?.(text, true);
+      });
+
+      newClient.on('bot-transcript', ({ text }) => {
+        console.log('🤖 Emma said:', text);
+        onTranscript?.(text, false);
+      });
+
+      await newClient.connect();
+      setClient(newClient);
+      
+    } catch (err) {
+      console.error('❌ Connection failed:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error occurred');
+      setIsConnecting(false);
+    }
   }, [onTranscript, onBotSpeaking]);
 
   const disconnect = useCallback(async () => {
-    if (client) {
-      await client.disconnect();
-      setClient(null);
+    try {
+      if (client) {
+        await client.disconnect();
+        setClient(null);
+        setIsConnected(false);
+        console.log('✅ Successfully disconnected');
+      }
+    } catch (err) {
+      console.error('❌ Disconnect error:', err);
+      setError(err instanceof Error ? err.message : 'Disconnect failed');
     }
   }, [client]);
 
@@ -114,6 +171,8 @@ export const usePipecatClient = ({
     client,
     isConnected,
     isBotSpeaking,
+    error,
+    isConnecting,
     connect,
     disconnect
   };
