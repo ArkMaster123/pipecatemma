@@ -107,7 +107,7 @@ export default function EmmaAdvancedPage() {
         if (audioRef.current && event.streams[0]) {
           audioRef.current.srcObject = event.streams[0]
           audioRef.current.play().catch(e => console.log('Audio play failed:', e))
-          
+
           // Set up output audio analysis for Emma's voice
           setupOutputAudioAnalysis(audioRef.current)
         }
@@ -395,8 +395,8 @@ export default function EmmaAdvancedPage() {
                   {/* Status Indicator Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 ${isConnected
-                        ? (isListening ? 'bg-green-500/30 border-2 border-green-400 scale-110' : 'bg-blue-500/30 border-2 border-blue-400')
-                        : 'bg-gray-500/30 border-2 border-gray-400'
+                      ? (isListening ? 'bg-green-500/30 border-2 border-green-400 scale-110' : 'bg-blue-500/30 border-2 border-blue-400')
+                      : 'bg-gray-500/30 border-2 border-gray-400'
                       } backdrop-blur-sm`}>
                       {isConnected ? (
                         isListening ? (
