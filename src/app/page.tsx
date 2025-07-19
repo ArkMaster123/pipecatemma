@@ -50,11 +50,20 @@ export default function Home() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-gray-300">
-                <p className="text-lg leading-relaxed">
-                  Imagine having a conversation with your computer, just like talking to a friend! 
-                  Emma is an AI assistant that can hear your voice, understand what you're saying, 
-                  and talk back to you with her own voice - no typing needed!
-                </p>
+                <div className="text-center">
+                  <Link href="/emma-advanced">
+                    <Button 
+                      size="lg" 
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xl px-8 py-4 rounded-full shadow-2xl transform hover:scale-105 transition-all duration-300"
+                    >
+                      🎤 Try Emma Now
+                      <ArrowRight className="w-6 h-6 ml-2" />
+                    </Button>
+                  </Link>
+                  <p className="text-sm text-gray-400 mt-3">
+                    Talk to your computer like a friend - no typing needed!
+                  </p>
+                </div>
                 
                 <div className="grid md:grid-cols-3 gap-4 mt-6">
                   <div className="text-center p-4">
